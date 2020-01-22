@@ -8,9 +8,8 @@
 $TTNX_ROOT_URL = "http://localhost/TimeTrackerNX/"
 
 # TTNXのWebAPI呼び出し時のユーザー情報（システム管理権限のあるユーザーを指定）
-# * 以下はサンプルDBの管理者ユーザーの情報を記載
-$USER = "admin"
-$PASS = ""
+$USER = "{'LoginName' of the user who can log in to TTNX}"
+$PASS = "{Login user password}"
 
 
 ## WebAPIを呼び出す際の認証用トークンを取得
@@ -27,7 +26,7 @@ try {
   # HTTPステータスコードと詳細を出力し、終了する。
   Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__ 
   Write-Host "StatusDescription:" $_.Exception.Response.StatusDescription
-  return "トークン取得でエラー"
+  return "Error getting token"
 }
 
 # [DEBUG用]取得した認証用トークンの内容を確認
@@ -50,7 +49,7 @@ try {
   # HTTPステータスコードと詳細を出力し、終了する。
   Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__ 
   Write-Host "StatusDescription:" $_.Exception.Response.StatusDescription
-  return "メンテナンスモード移行要求でエラー"
+  return "Error in maintenance mode transition request"
 }
 
 # [DEBUG用]取得したレスポンスの内容を確認
@@ -58,6 +57,7 @@ Write-Output $response
 
 
 # TTNXがメンテナンスモードになるまでチェック（1秒ごとで最大60回）
+$result = 0
 for ($i = 0; $i -lt 60; $i++) {
   try {
     $response = Invoke-RestMethod -Uri $REST_API -Method GET -Headers $HEAD -ContentType "application/json"
@@ -65,7 +65,7 @@ for ($i = 0; $i -lt 60; $i++) {
     # HTTPステータスコードと詳細を出力し、終了する。
     Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__ 
     Write-Host "StatusDescription:" $_.Exception.Response.StatusDescription
-    return "メンテナンスモード状況取得でエラー"
+    return "Error getting  maintenance mode status"
   }
 
   # [DEBUG用]取得したレスポンスの内容を確認
@@ -73,6 +73,7 @@ for ($i = 0; $i -lt 60; $i++) {
 
   # メンテナンスモードに移行したらでチェック終了
   if($response.status -eq "Suspend") {
+    $result = 1
     break
   }
 
@@ -80,5 +81,10 @@ for ($i = 0; $i -lt 60; $i++) {
   Start-Sleep -s 1
 }
 
-# 正常終了
-return 0
+if($result -eq 1) {
+  # 正常終了
+  return "Success"
+} else {
+  # 1分以内にメンテナンスモードに移行できなかった
+  return "Failed to enter maintenance mode within 1 minute"
+}
