@@ -1,4 +1,4 @@
-# TTNXが使用するミドルウェア（SQL ServerとRedis）のDocker（linux版）環境を構築する（Docker Composeを使用）
+# TTNXが使用するミドルウェア（SQL ServerとRedis）のDocker環境を構築する（Docker Composeを使用）
 
 ## 目的
 - Docker Composeを使用して、Windows 10 Pro/EntのDocker上で動作するlinux版のSQL Server 2019とRedis環境を構築する。
